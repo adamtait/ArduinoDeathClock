@@ -13,6 +13,8 @@ best-before-date. This knowledge helps me make better decisions about
 how to spend my time and how I want to live with the time I have.
 
 
+!["I hope your death is further away than mine!"](example.jpg)
+
 
 ## What's my life expectancy?
 
