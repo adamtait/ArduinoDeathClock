@@ -80,10 +80,10 @@ To resolve this issue, read on.
 
 #### Add a clock source
 
-There are components you can buy to act as a clock source (like an
-RTC), otherwise you can add an ethernet or wifi connector and use NTP
-over the internet. The
+There are components you can buy to act as a clock source (like the
+DS1307 crystal), otherwise you can add an ethernet or wifi connector
+and use NTP over the internet. The
 [Arduino Time Library](https://github.com/PaulStoffregen/Time) that
-this project uses has some code examples that you can pull from. 
+this project uses has some code examples that you can pull from.
 
 If you do implement this, PRs are welcome.
