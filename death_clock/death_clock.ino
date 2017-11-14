@@ -45,7 +45,8 @@ void loop()
   printToLcd(1, printFormat(days(diff), hours(diff), minutes(diff), seconds(diff)));
 
   // store current time in EEPROM
-  if ( current_epoch_time % (60 * 10) == 0 )  {   // only store time every 10 minutes. EEPROM has a limit to lifetime writes. What does 10 minutes matter in the whole scheme of your life, anyways?
+  if ( current_epoch_time % (60 * 60 * 12) == 0 )
+  {   // only store time twice a day. ATmega's EEPROM has a lifetime of 100k write/erase cycles. At this rate, it should last ~137 years.
     EEPROM.put( eeprom_addr, current_epoch_time ); 
   }       
   
