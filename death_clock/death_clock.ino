@@ -35,7 +35,15 @@ void loop()
   printToLcd(0, formatLong(years(diff), 5) + " years");
   printToLcd(1, printFormat(days(diff), hours(diff), minutes(diff), seconds(diff)));
 
-  EepromUpdate( current_epoch_time );
+  // Twice a day, update EEPROM value & clear LCD
+  long timeSincelastPut = current_epoch_time - EepromGet();
+  long secondsInTwelveHours = 43200L;
+  if ( timeSincelastPut >= secondsInTwelveHours )
+  { // EEPROM has limited lifetime write/erase cycles. At rate of write/12hr, it should last ~137 years.
+    EepromPut( current_epoch_time );
+    clearLcd();
+  }
+  
   delay(1000);
 }
 
@@ -51,7 +59,7 @@ void printToLcd(int row, String s)
 }
 
 void clearLcd()
-{
+{   // turn it off & on again
     lcd.noDisplay();
     lcd.display();
 }
@@ -72,18 +80,8 @@ long EepromGet()
   return t;
 }
 
-void EepromUpdate(long t)
-{ // only store time twice a day. ATmega's EEPROM has a lifetime of 100k write/erase cycles. At this rate, it should last ~137 years.
-  long timeSincelastPut = t - EepromGet();
-  long secondsInTwelveHours = 43200L;
-  if ( timeSincelastPut >= secondsInTwelveHours )
-  {   
-    EepromPut( t );
-  }
-}
-
 void EepromPut(long t)
-{
+{ // ATmega's EEPROM has a lifetime of 100k write/erase cycles. Try to use this sparingly.
   EEPROM.put( eeprom_addr, t );
   eepromValueCache = t;
 }
