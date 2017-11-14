@@ -20,7 +20,7 @@ how to spend my time and how I want to live with the time I have.
 
 We can't know the future, so we can't accurately predict how long
 you'll live. The next best option is to use research & statistics to
-generate a probably life expectancy.
+generate a probability of your life expectancy.
 
 Here are a couple of life expectancy calculators that (I think) have
 some science behind them:
