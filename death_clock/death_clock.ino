@@ -12,50 +12,94 @@
 
 
 
-
-
-
+// Hardware Consts
 #define eeprom_addr 0
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
 
 
 
+// Arduino Required Fns
+
 void setup() 
 {
   lcd.begin(16, 2);
-  
-  // SET TIME
-  long stored_epoch_time = 0;
-  EEPROM.get( eeprom_addr, stored_epoch_time );
-
-  long t = CURRENT_EPOCH_TIME_SECONDS;
-  if ( stored_epoch_time > t )  { t = stored_epoch_time; }
-  setTime( t );   // used by now()
+  setTimeLibNow();
 }
 
-
-void loop() 
+void loop()
 {
-
   long current_epoch_time = now();
   long diff = FINAL_EPOCH_TIME_SECONDS - current_epoch_time;
 
   printToLcd(0, formatLong(years(diff), 5) + " years");
   printToLcd(1, printFormat(days(diff), hours(diff), minutes(diff), seconds(diff)));
 
-  // store current time in EEPROM
-  if ( current_epoch_time % (60 * 60 * 12) == 0 )
-  {   // only store time twice a day. ATmega's EEPROM has a lifetime of 100k write/erase cycles. At this rate, it should last ~137 years.
-    EEPROM.put( eeprom_addr, current_epoch_time ); 
-  }       
-  
+  EepromUpdate( current_epoch_time );
   delay(1000);
 }
 
 
 
+
+// LCD Helpers
+
+void printToLcd(int row, String s)
+{
+  lcd.setCursor(0, row);
+  lcd.print( s + "  " );
+}
+
+void clearLcd()
+{
+    lcd.noDisplay();
+    lcd.display();
+}
+
+
+
+// EEPROM Helpers
+
+long eepromValueCache = 0;    // EEPROM reads can be slow, so use a local memory cache.
+
+long EepromGet()
+{
+  if ( eepromValueCache > 0 )   { return eepromValueCache; }
+  
+  long t;
+  EEPROM.get( eeprom_addr, t );
+  eepromValueCache = t;
+  return t;
+}
+
+void EepromUpdate(long t)
+{ // only store time twice a day. ATmega's EEPROM has a lifetime of 100k write/erase cycles. At this rate, it should last ~137 years.
+  long timeSincelastPut = t - EepromGet();
+  long secondsInTwelveHours = 43200L;
+  if ( timeSincelastPut >= secondsInTwelveHours )
+  {   
+    EepromPut( t );
+  }
+}
+
+void EepromPut(long t)
+{
+  EEPROM.put( eeprom_addr, t );
+  eepromValueCache = t;
+}
+
+
+
+
 // Time Helpers
+
+void setTimeLibNow()
+{ // TimeLib.setTime(long) required by TimeLib.now()
+  long stored_epoch_time = EepromGet();
+  long t = CURRENT_EPOCH_TIME_SECONDS;
+  if ( stored_epoch_time > t )  { t = stored_epoch_time; }
+  setTime( t );
+}
 
 long seconds (long epoch_seconds)
 {
@@ -74,12 +118,12 @@ long hours (long epoch_seconds)
 
 long days (long epoch_seconds)
 {
-  return (epoch_seconds/ 60 / 60 / 24) % 365;
+  return (epoch_seconds / 60 / 60 / 24) % 365;
 }
 
 long years (long epoch_seconds)
 {
-  return epoch_seconds/ 60 / 60 / 24 / 365;
+  return epoch_seconds / 60 / 60 / 24 / 365;
 }
 
 
@@ -110,12 +154,4 @@ String reduceFormatLong(String acc, long n, int digitLen)
 
 
 
-// LCD helpers
-
-
-void printToLcd(int row, String s)
-{
-  lcd.setCursor(0, row);
-  lcd.print( s + "  " );
-}
 
